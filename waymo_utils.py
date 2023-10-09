@@ -15,12 +15,12 @@ WAYMO_CLASSES = ['Unknown', 'Vehicle', 'Pedestrian', 'Sign', 'Cyclist']
 
 
 def process_single_sequence(sequence_file: str,
-                            save_path: str):
+                            save_dir: str):
     sequences_meta = []
     sequence_name = os.path.splitext(os.path.basename(sequence_file))[0]
 
     dataset = tf.data.TFRecordDataset(str(sequence_file), compression_type='')
-    cur_save_dir = os.path.join(save_path, sequence_name)
+    cur_save_dir = os.path.join(save_dir, sequence_name)
 
     if not os.path.exists(cur_save_dir):
         os.makedirs(cur_save_dir)
@@ -66,7 +66,7 @@ def process_single_sequence(sequence_file: str,
 
         sequences_meta.append(frame_info)
 
-    pkl_file = os.path.join(save_path, f"{sequence_name}.pkl")
+    pkl_file = os.path.join(save_dir, f"{sequence_name}.pkl")
     with open(pkl_file, 'wb') as f:
         pickle.dump(sequences_meta, f)
 
