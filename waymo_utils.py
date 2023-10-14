@@ -32,7 +32,6 @@ def process_single_sequence(sequence_file: str,
         frame_info = dict()
 
         frame_info['frame_id'] = f"{sequence_name}_{frame_index:03d}"
-        frame_info['frame_index'] = frame_index
         frame_info['metadata'] = {
             'context_name': frame.context.name,
             'timestamp_micros': frame.timestamp_micros
