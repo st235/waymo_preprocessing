@@ -1,23 +1,11 @@
 import argparse
-import concurrent.futures
+import multiprocessing
+
+from functools import partial
+from tqdm import tqdm
 
 from file_utils import list_all_files_with_extension
 from waymo_utils import process_single_sequence
-
-
-def process_batch(batch_of_scenes: list[str],
-                  save_dir: str,
-                  worker_id: int):
-    print(f"Worker #{worker_id:03d} started with a batch: {batch_of_scenes} of size {len(batch_of_scenes)}")
-
-    for i, scene in enumerate(batch_of_scenes):
-        progress = i / len(batch_of_scenes) * 100.0
-        print(f"Processing scene {scene}, worker #{worker_id:03d} progress {progress:.2f}%")
-
-        process_single_sequence(sequence_file=scene,
-                                save_dir=save_dir)
-
-    print(f"Worker #{worker_id:03d} finished.")
 
 
 def process_dataset(files: list,
@@ -31,22 +19,13 @@ def process_dataset(files: list,
 
     print(f'Found {scenes_count} scenes.')
 
-    batches = list()
-    batch_size = scenes_count // num_workers
+    process_scene = partial(
+        process_single_sequence,
+        save_dir=save_dir
+    )
 
-    for batch_index in range(num_workers):
-        batch_start = batch_index * batch_size
-        batch_finish = (batch_index + 1) * batch_size
-
-        if batch_index + 1 == num_workers and scenes_count % num_workers > 0:
-            # Last batch will be a bit bigger if there is not enough elements
-            # at the end to end up in a standalone batch.
-            batch_finish = len(scenes)
-
-        batches.append(scenes[batch_start:batch_finish])
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-        executor.map(process_batch, batches, [save_dir] * num_workers, range(1, num_workers + 1))
+    with multiprocessing.Pool(num_workers) as p:
+        list(tqdm(p.imap_unordered(process_scene, scenes), total=scenes_count))
 
 
 def main():
