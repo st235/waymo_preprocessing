@@ -115,14 +115,14 @@ def __generate_labels(frame, pose):
         'accel_global': np.array(accelerations),
     }
 
-    if len(annotations['ids']) > 0:
+    if len(annotations['obj_ids']) > 0:
         global_speed = np.pad(annotations['speed_global'], ((0, 0), (0, 1)), mode='constant',
                               constant_values=0)  # (N, 3)
         speed = np.dot(global_speed, np.linalg.inv(pose[:3, :3].T))
         speed = speed[:, :2]
 
         gt_boxes_lidar = np.concatenate([
-            annotations['locations'], annotations['dimensions'], annotations['heading_angles'][..., np.newaxis], speed],
+            annotations['location'], annotations['dimensions'], annotations['heading_angles'][..., np.newaxis], speed],
             axis=1)
     else:
         gt_boxes_lidar = np.zeros((0, 9))
